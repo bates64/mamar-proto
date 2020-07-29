@@ -1,0 +1,137 @@
+{
+	"root": true,
+	"ignorePatterns": [
+		"vite.config.js",
+		"dist"
+	],
+
+	"parser": "babel-eslint",
+	"parserOptions": {
+		"ecmaVersion": 11,
+		"ecmaFeatures": {
+		  "experimentalObjectRestSpread": true,
+		  "jsx": true
+		},
+		"sourceType": "module"
+	},
+	"env": {
+		"es2020": true,
+		"browser": true
+	},
+
+	"extends": [
+		"eslint:recommended",
+		"plugin:react/recommended",
+		"plugin:react-hooks/recommended"
+	],
+
+	"plugins": [],
+
+	"settings": {
+		"react": {
+			"pragma": "h",
+			"version": "latest"
+		}
+	},
+
+	"rules": {
+		"semi": [1, "never"],
+		"indent": [1, "tab"],
+		"brace-style": 1,
+		"linebreak-style": 2,
+
+		"quotes": [1, "single", { "avoidEscape": true }],
+		"prefer-template": 1,
+		"no-useless-concat": 1,
+		"jsx-quotes": [1, "prefer-single"],
+
+		"no-unused-vars": 0,
+		"no-var": 2,
+		"prefer-const": 1,
+		"no-param-reassign": 2,
+		"no-return-await": 1,
+
+		"function-paren-newline": [1, "consistent"],
+		"object-curly-newline": 1,
+
+		"no-trailing-spaces": 0,
+		"no-multiple-empty-lines": [1, { "max": 1 }],
+
+		"no-throw-literal": 1,
+		"prefer-promise-reject-errors": 1,
+
+		"func-style": [1, "declaration", { "allowArrowFunctions": true }],
+		"arrow-parens": [1, "as-needed"],
+		"implicit-arrow-linebreak": 1,
+		"prefer-arrow-callback": 1,
+
+		"object-curly-spacing": [1, "always"],
+		"array-bracket-spacing": 1,
+
+		"curly": [1, "multi-line", "consistent"],
+		"padded-blocks": [1, "never"],
+		"no-else-return": 1,
+		"newline-per-chained-call": [1, { "ignoreChainWithDepth": 3 }],
+
+		"rest-spread-spacing": 1,
+		"comma-spacing": 1,
+		"comma-dangle": [1, "always-multiline"],
+		"function-call-argument-newline": [1, "consistent"],
+		"dot-notation": 1,
+		"dot-location": [1, "property"],
+
+		"react/react-in-jsx-scope": 0, // preact"s `h` is implicit
+		"react/no-access-state-in-setstate": 1,
+		"react/prefer-stateless-function": 1,
+		"react/jsx-no-bind": 1,
+		"react/jsx-closing-bracket-location": [1, "line-aligned"],
+		"react/jsx-no-duplicate-props": 2,
+		"react/jsx-props-no-multi-spaces": 1,
+		"react/jsx-first-prop-new-line": 1,
+		"react/jsx-pascal-case": 2,
+		"react/jsx-curly-spacing": 1,
+		"react/jsx-tag-spacing": [1, {
+			"beforeSelfClosing": "never",
+			"beforeClosing": "never"
+		}],
+		"react/jsx-indent": [1, "tab"],
+		"react/jsx-wrap-multilines": [1, {
+			"return": "parens-new-line"
+		}]
+	},
+	"overrides": [
+		{
+			"files": "**/*.ts?(x)",
+
+			"parser": "@typescript-eslint/parser",
+			"parserOptions": {
+				"project": ["./tsconfig.json"]
+			},
+
+			"extends": [
+				"plugin:@typescript-eslint/eslint-recommended",
+				"plugin:@typescript-eslint/recommended"
+			],
+
+			"rules": {
+				"indent": 0, "@typescript-eslint/indent": [1, "tab"],
+				"semi": 0, "@typescript-eslint/semi": [1, "never"],
+				"no-extra-semi": 0, "@typescript-eslint/no-extra-semi": 1,
+				"brace-style": 0, "@typescript-eslint/brace-style": [1, "1tbs", { "allowSingleLine": true }],
+				"comma-spacing": 0, "@typescript-eslint/comma-spacing": 1,
+				"@typescript-eslint/no-unused-vars": 0,
+
+				"@typescript-eslint/prefer-nullish-coalescing": 1,
+				"@typescript-eslint/prefer-optional-chain": 1,
+
+				"@typescript-eslint/explicit-function-return-type": 0,
+
+				"@typescript-eslint/member-delimiter-style": [1, {
+					"multiline": { "delimiter": "none", "requireLast": true },
+					"singleline": { "delimiter": "comma", "requireLast": false }
+				}],
+				"@typescript-eslint/type-annotation-spacing": 1
+			}
+		}
+	]
+}
