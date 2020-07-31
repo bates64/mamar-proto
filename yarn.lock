@@ -1780,6 +1780,11 @@ jest-worker@^24.9.0:
     merge-stream "^2.0.0"
     supports-color "^6.1.0"
 
+js-synthesizer@1.7.0:
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/js-synthesizer/-/js-synthesizer-1.7.0.tgz#93eee369622c51f28668b864f812cdc40f513582"
+  integrity sha512-xwXz15SgeckS2KokSIhrJbigo6h0sEPYng4BE7lr3MwjIgaGh9inkI3mjzE882eaCTI2dHJ/d3K5cmJ39YzdCQ==
+
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
