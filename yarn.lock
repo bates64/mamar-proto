@@ -713,6 +713,11 @@ brotli-size@^4.0.0:
   dependencies:
     duplexer "0.1.1"
 
+browser-nativefs@^0.10.2:
+  version "0.10.2"
+  resolved "https://registry.yarnpkg.com/browser-nativefs/-/browser-nativefs-0.10.2.tgz#75e8bec8c5839bf74a3c289cdf4742a231f9dff0"
+  integrity sha512-8aLLk6uFAp5QJ2KFwM2Ty1dT361Dt9QOCnOmLascVspwj81A6wj5NmVG3w6gUnvmO4BnWrwdV2U3Q7GUMdFjNA==
+
 buffer-from@^1.0.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/buffer-from/-/buffer-from-1.1.1.tgz#32713bc028f75c02fdb710d7c7bcec1f2c6070ef"

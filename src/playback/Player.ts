@@ -18,6 +18,8 @@ export default class Player {
 	synth: Synthesizer
 	seq: ISequencer
 
+	bpm = 120
+
 	/** Sets up the synthesizer, loads the soundfont, and connects output to the user's speakers. */
 	async setup(audioContext = new AudioContext()): Promise<void> {
 		const { Synthesizer, waitForReady } = await import('js-synthesizer')
@@ -38,6 +40,8 @@ export default class Player {
 		// Create and link a sequencer for time-sensitive event pushing.
 		this.seq = await Synthesizer.createSequencer()
 		await this.seq.registerSynthesizer(this.synth)
+
+		this.seq.setTimeScale(1000) // 1000 ticks per second
 	}
 
 	/**
@@ -51,16 +55,18 @@ export default class Player {
 	async playNote(time: number, channel: number, pitch: number, velocity: number, duration: number): Promise<void> {
 		// TODO: check for pitch limit breaches depending on channel's instrument
 
+		const tickMs = (60 / this.bpm) * 1000
+
 		this.seq.sendEventAt({
 			type: 'note-on',
 			channel,
 			key: pitch,
 			vel: velocity,
-		}, time, false)
+		}, time * tickMs, false)
 		this.seq.sendEventAt({
 			type: 'note-off',
 			channel,
 			key: pitch,
-		}, time + duration, false)
+		}, (time + duration) * tickMs, false)
 	}
 }
