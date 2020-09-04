@@ -4,6 +4,7 @@
 		"moduleResolution": "node",
 		"module": "esnext",
 		"jsx": "preserve",
-		"noEmit": true
+		"noEmit": true,
+		"incremental": true,
 	}
 }
