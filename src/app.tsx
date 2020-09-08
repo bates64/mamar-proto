@@ -4,7 +4,7 @@ import { useState, useCallback } from 'preact/hooks'
 import { fileOpen } from 'browser-nativefs'
 
 import Song from './song/Song'
-import { NoteCmd, SetTempoCmd } from './song/Command'
+import { NoteCmd, SetTempoCmd, LoadInstrumentCmd } from './song/Command'
 import midiToSong from './song/midi'
 
 import type Player from './playback/Player'
@@ -40,16 +40,21 @@ export const App: FunctionComponent = props => {
 
 		let bpmChanges = 0
 
-		for (const { commands } of subsegment.tracks) {
+		for (let channel = 0; channel < subsegment.tracks.length; channel++) {
+			const { commands } = subsegment.tracks[channel]
+
 			for (const command of commands) {
 				if (command instanceof NoteCmd) {
-					player.playNote(command.time, 0, command.pitch, command.velocity, command.duration)
+					player.playNote(command.time, channel, command.pitch, command.velocity, command.duration)
 				} else if (command instanceof SetTempoCmd) {
 					player.bpm = command.bpm
 					if (bpmChanges++ > 0) {
 						// TODO: support dynamic tempo changes
 						console.warn('song uses dynamic tempo, which is not supported')
 					}
+				} else if (command instanceof LoadInstrumentCmd) {
+					// FIXME: instrument loads at t=0 come AFTER notes at t=0. This is probably because Song.insertCommand does not guarantee the order of commands with the same time.
+					player.loadInstrument(command.time, channel, command.instrument)
 				}
 			}
 		}

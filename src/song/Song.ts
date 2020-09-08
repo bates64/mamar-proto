@@ -3,8 +3,8 @@ import Command from './Command'
 export default class Song {
 	name?: string
 	segments: [Segment?, Segment?, Segment?, Segment?] = []
-	drums: Drum[] = []
 	instruments: Instrument[] = []
+	drums: Drum[] = []
 
 	addSegment(): Segment {
 		for (let i = 0; i < 4; i++) {
@@ -15,26 +15,48 @@ export default class Song {
 
 		throw new Error('A song can have a maximum of 4 segments')
 	}
+
+	addInstrument(): Instrument {
+		const instrument = new Instrument(this, this.instruments.length)
+		this.instruments.push(instrument)
+		return instrument
+	}
+
+	addDrum(): Drum {
+		const drum = new Drum(this, this.instruments.length)
+		this.drums.push(drum)
+		return drum
+	}
 }
 
 export class Instrument {
-	name: string
+	protected song: Song
 
-	bank: number
-	patch: number
-	volume: number
-	pan: number
-	reverb: number
-	tuneCoarse: number
-	tuneFine: number
-	unknown7: number
+	name?: string
+	readonly index: number
+
+	constructor(parent: Song, index: number) {
+		this.song = parent
+		this.index = index
+	}
+
+	// TODO: determine ranges for these values, e.g. is pan=0 hard left, pan=255 hard right?
+	bank = 0
+	patch = 0
+	volume = 127
+	pan = 64
+	reverb = 0
+	tuneCoarse = 0
+	tuneFine = 0
+	unknown7 = 0
 }
 
 export class Drum extends Instrument {
-	unknown8: number
-	unknown9: number
-	unknownA: number
-	unknownB: number
+	// TODO
+	unknown8 = 0
+	unknown9 = 0
+	unknownA = 0
+	unknownB = 0
 }
 
 export class Segment {

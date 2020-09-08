@@ -25,7 +25,7 @@ export class NoteCmd extends Command {
 	}
 }
 
-export class InstrumentChangeCmd extends Command {
+export class LoadInstrumentCmd extends Command {
 	instrument: Instrument
 
 	constructor(time: number, instrument: Instrument) {

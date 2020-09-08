@@ -1,5 +1,5 @@
 import Song, { Instrument, Segment } from './Song'
-import { NoteCmd, SetTempoCmd } from './Command'
+import { NoteCmd, SetTempoCmd, LoadInstrumentCmd } from './Command'
 import Reader from './Reader'
 
 export default function loadToSong(data: Uint8Array): Song {
@@ -431,8 +431,16 @@ export function convert(midi: Midi): Song {
 	for (const midiTrack of midi.tracks) {
 		const track = subsegment.addTrack()
 
+		// We make an assumption about the MIDI file here: that it makes sense to assign each track exactly one
+		// instrument. This obviously won't be logical for some files (e.g. files optimised to fit more than 16
+		// instruments into 16 channels), but it'll likely be good enough for most people. Additionally, it
+		// makes track-specific control events easier to reason about and translate.
+		const instrument = song.addInstrument()
+		track.insertCommand(new LoadInstrumentCmd(0, instrument))
+
+		// TODO: handle channel 9 (drum)
+
 		let time = 0
-		const endTime: number | undefined = undefined
 
 		// Tracks notes that are currently being played, so we can determine their lengths.
 		const activeNotes: Set<{
@@ -467,29 +475,26 @@ export function convert(midi: Midi): Song {
 				// See https://www.midi.org/forum/4452-calculate-absolute-time-from-ppq-and-ticks.
 				// Note that we already handle ticksPerQuarterNote in `time`.
 				const bpm = Math.round(1000000 * 60 / event.microsecondsPerQuarterNote)
-
-				console.log(bpm)
-
 				track.insertCommand(new SetTempoCmd(time, bpm))
-			} /*else if (event.type === 'PROGRAM_CHANGE') {
-				usedChannels.add(event.channel)
-				insertCommand({
-					id: nanoid(),
-					type: 'UPDATE_INSTRUMENT',
-					time,
-					channel: event.channel,
-					update: { patch: event.program },
-				}, masterCommands)
-			} else if (event.type === 'CONTROL_CHANGE' && event.controller === 0x00) {
-				usedChannels.add(event.channel)
-				insertCommand({
-					id: nanoid(),
-					type: 'UPDATE_INSTRUMENT',
-					time,
-					channel: event.channel,
-					update: { bank: event.value },
-				}, masterCommands)
-			}*/
+			} else if (event.type === 'CONTROL_CHANGE') {
+				if (time === 0) {
+					// Instrument setup.
+					// See https://www.midi.org/specifications-old/item/table-3-control-change-messages-data-bytes-2
+					if (event.controller === 0x00) instrument.bank = event.value // TODO: consider LSB bank select event (controller == 0x20)
+					if (event.controller === 0x07) instrument.volume = event.value
+					if (event.controller === 0x0A) instrument.pan = event.value // TODO: range
+					if (event.controller === 0x5B) instrument.reverb = event.value
+				} else {
+					// TODO: handle t != 0
+				}
+			} else if (event.type === 'PROGRAM_CHANGE') {
+				if (time === 0) {
+					// Instrument setup.
+					instrument.patch = event.program
+				} else {
+					// TODO: handle t != 0
+				}
+			}
 		}
 
 		// There shouldn't be any notes that don't end, but we'll handle them anyway.
