@@ -480,7 +480,8 @@ export function convert(midi: Midi): Song {
 				if (time === 0) {
 					// Instrument setup.
 					// See https://www.midi.org/specifications-old/item/table-3-control-change-messages-data-bytes-2
-					if (event.controller === 0x00) instrument.bank = event.value // TODO: consider LSB bank select event (controller == 0x20)
+					if (event.controller === 0x00) instrument.bank = event.value << 8
+					if (event.controller === 0x20) instrument.bank = (instrument.bank & 0xFF) + event.value
 					if (event.controller === 0x07) instrument.volume = event.value
 					if (event.controller === 0x0A) instrument.pan = event.value // TODO: range
 					if (event.controller === 0x5B) instrument.reverb = event.value

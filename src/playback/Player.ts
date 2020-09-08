@@ -52,6 +52,11 @@ export default class Player {
 		return msPerTick * milliseconds
 	}
 
+	protected translateBank(bank: number): number {
+		// TODO(research): pm64.sf2 has only two banks. What are the other ones used in vanilla for?
+		return bank === 0 ? 0 : 1
+	}
+
 	/**
 	 * Queue a note to play.
 	 * @param time Relative time offset (in ms) to play the note at.
@@ -89,8 +94,14 @@ export default class Player {
 		this.seq.sendEventAt({
 			type: 'control-change',
 			channel,
-			control: 0x00, // MSB Bank Select (TODO: consider LSB)
-			value: instrument.bank,
+			control: 0x00, // MSB Bank Select
+			value: this.translateBank(instrument.bank) << 8,
+		}, this.timeToTick(time), false)
+		this.seq.sendEventAt({
+			type: 'control-change',
+			channel,
+			control: 0x20, // LSB Bank Select
+			value: this.translateBank(instrument.bank),
 		}, this.timeToTick(time), false)
 		this.seq.sendEventAt({
 			type: 'program-change',
