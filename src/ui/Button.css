@@ -1,0 +1,15 @@
+.Button {
+	display: inline-block;
+
+	border: 1px solid #1b1f2326;
+	border-radius: 6px;
+
+	font-weight: 500;
+
+	cursor: pointer;
+	user-select: none;
+}
+
+.Button:hover > .Button_HoverShade {
+	background: #1b1f2308;
+}

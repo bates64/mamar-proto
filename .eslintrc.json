@@ -98,7 +98,8 @@
 		"react/jsx-indent": [1, "tab"],
 		"react/jsx-wrap-multilines": [1, {
 			"return": "parens-new-line"
-		}]
+		}],
+		"react/no-unknown-property": [2, { "ignore": "class" }]
 	},
 	"overrides": [
 		{

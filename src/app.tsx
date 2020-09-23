@@ -3,13 +3,18 @@ import { useState, useCallback } from 'preact/hooks'
 
 import { fileOpen } from 'browser-nativefs'
 
+import Button from './ui/Button'
+import { Page, Play } from './ui/icon'
+
 import Song from './song/Song'
 import { NoteCmd, SetTempoCmd, LoadInstrumentCmd } from './song/Command'
 import midiToSong from './song/midi'
 
 import type Player from './playback/Player'
 
-export const App: FunctionComponent = props => {
+import './App.css'
+
+export default () => {
 	const [player, setPlayer] = useState<Player>(null)
 	const [song, setSong] = useState<Song>(null)
 
@@ -61,10 +66,9 @@ export const App: FunctionComponent = props => {
 	}, [player, song])
 
 	return (
-		<>
-			<p>Hello, world!</p>
-			{song === null && <button onClick={openMidi}>Open MIDI</button>}
-			{player && song && <button onClick={playSong}>Play {song.name}</button>}
-		</>
+		<div class='App'>
+			{song === null && <Button large onClick={openMidi}><Page color='black'/>Open MIDI</Button>}
+			{player && song && <Button large onClick={playSong}><Play color='#519872'/>Play {song.name}</Button>}
+		</div>
 	)
 }

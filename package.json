@@ -8,11 +8,13 @@
 	},
 	"dependencies": {
 		"browser-nativefs": "^0.10.2",
+		"classnames": "^2.2.6",
 		"js-synthesizer": "1.7.0",
 		"preact": "^10.4.6"
 	},
 	"devDependencies": {
 		"@prefresh/vite": "1.0.2",
+		"@types/classnames": "^2.2.10",
 		"@typescript-eslint/eslint-plugin": "4.x",
 		"@typescript-eslint/parser": "4.x",
 		"babel-eslint": "10.x",

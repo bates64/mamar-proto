@@ -1,0 +1,8 @@
+.Box {
+	display: flex;
+	flex-direction: row;
+}
+
+.Box_vertical {
+	flex-direction: column;
+}
