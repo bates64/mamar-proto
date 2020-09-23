@@ -1,4 +1,4 @@
-import Command from './Command'
+import Command, { NoteCmd } from './Command'
 
 export default class Song {
 	name?: string
@@ -139,7 +139,21 @@ export class Track {
 
 	/** Inserts the given command into the list, appropriate to its time. */
 	insertCommand(command: Command): void {
-		const index = this.findIndexForTime(command.time)
+		let index = this.findIndexForTime(command.time)
+
+		// Special-case for NoteCmds: they should always be placed at the tail of a set of commands at
+		// the same time as them. This mitigates an issue where playback would queue an instrument change
+		// *after* a note is played, despite both commands having the same time value (common at t=0 of
+		// MIDI data), leaving the note at that time using the old (or undefined!) instrument settings.
+		//
+		// This could arguably be done with all insertions (not just with NoteCmd), but, as most (!)
+		// commands are not dependent on exact ordering at the same time value, we can skip this.
+		if (command instanceof NoteCmd) {
+			while (index < this.commands.length && this.commands[index].time === command.time) {
+				index++
+			}
+		}
+
 		this.commands.splice(index, 0, command) // In-place.
 
 		if (command.time > this.duration) {
