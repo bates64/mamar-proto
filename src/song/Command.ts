@@ -1,5 +1,3 @@
-import { Instrument } from './Song'
-
 export default abstract class Command {
 	/**
 	 * Relative to the start of the subsegment. One time unit is a crotchet (1/4 of a bar).
@@ -22,15 +20,6 @@ export class NoteCmd extends Command {
 		this.pitch = pitch
 		this.velocity = velocity
 		this.duration = duration
-	}
-}
-
-export class LoadInstrumentCmd extends Command {
-	instrument: Instrument
-
-	constructor(time: number, instrument: Instrument) {
-		super(time)
-		this.instrument = instrument
 	}
 }
 

@@ -98,12 +98,21 @@ export class Track {
 	protected subsegment: Subsegment
 
 	flags = 0
-	commands: Command[] = []
+	sections: TrackSection[] = [] // Not necessarily sorted
 	muteState = MuteState.Play
-	duration = 0
 
 	constructor(parent: Subsegment) {
 		this.subsegment = parent
+	}
+
+	addSection() {
+		const section = new TrackSection(this)
+		this.sections.push(section)
+		return section
+	}
+
+	get duration() {
+		return this.sections.reduce((acc, section) => acc + section.duration, 0)
 	}
 
 	// TODO: should this be reflected in exported BGM?
@@ -113,6 +122,20 @@ export class Track {
 
 		// If any tracks are Solo, we must be Solo to be heard.
 		return hasSoloTracks ? this.muteState === MuteState.Solo : this.muteState === MuteState.Play
+	}
+}
+
+/** A section of track where the instrument does not change. */
+export class TrackSection {
+	protected track: Track
+
+	time = 0
+	duration = 0
+	instrument?: Instrument // Undefined means "inherit existing instrument"
+	commands: Command[] = []
+
+	constructor(parent: Track) {
+		this.track = parent
 	}
 
 	/**

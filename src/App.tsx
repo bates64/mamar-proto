@@ -7,7 +7,7 @@ import Button from './ui/Button'
 import { Page, Play } from './ui/icon'
 
 import Song from './song/Song'
-import { NoteCmd, SetTempoCmd, LoadInstrumentCmd } from './song/Command'
+import { NoteCmd, SetTempoCmd } from './song/Command'
 import midiToSong from './song/midi'
 
 import type Player from './playback/Player'
@@ -46,20 +46,19 @@ export default () => {
 		let bpmChanges = 0
 
 		for (let channel = 0; channel < subsegment.tracks.length; channel++) {
-			const { commands } = subsegment.tracks[channel]
+			for (const section of subsegment.tracks[channel].sections) {
+				player.loadInstrument(section.time, channel, section.instrument)
 
-			for (const command of commands) {
-				if (command instanceof NoteCmd) {
-					player.playNote(command.time, channel, command.pitch, command.velocity, command.duration)
-				} else if (command instanceof SetTempoCmd) {
-					player.bpm = command.bpm
-					if (bpmChanges++ > 0) {
-						// TODO: support dynamic tempo changes
-						console.warn('song uses dynamic tempo, which is not supported')
+				for (const command of section.commands) {
+					if (command instanceof NoteCmd) {
+						player.playNote(command.time, channel, command.pitch, command.velocity, command.duration)
+					} else if (command instanceof SetTempoCmd) {
+						player.bpm = command.bpm
+						if (bpmChanges++ > 0) {
+							// TODO: support dynamic tempo changes
+							console.warn('song uses dynamic tempo, which is not supported')
+						}
 					}
-				} else if (command instanceof LoadInstrumentCmd) {
-					// FIXME: instrument loads at t=0 come AFTER notes at t=0. This is probably because Song.insertCommand does not guarantee the order of commands with the same time.
-					player.loadInstrument(command.time, channel, command.instrument)
 				}
 			}
 		}

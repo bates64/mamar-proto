@@ -1,5 +1,5 @@
-import Song, { Instrument, Segment } from './Song'
-import { NoteCmd, SetTempoCmd, LoadInstrumentCmd } from './Command'
+import Song from './Song'
+import { NoteCmd, SetTempoCmd } from './Command'
 import Reader from './Reader'
 
 export default function loadToSong(data: Uint8Array): Song {
@@ -369,74 +369,19 @@ export function convert(midi: Midi): Song {
 
 	const usedChannels = new Set<number>()
 
-	/*
-	// TODO: Combine UPDATE_INSTRUMENTs executed at the same time
-
-	const initialMasterCommands = []
-	for (const command of masterCommands) {
-		if (command.time > 0) break
-		initialMasterCommands.push(command)
-	}
-
-	const instruments: Instrument[] = [] // There might be holes in this array!
-	for (const channelNo of usedChannels) {
-		const instrument = {
-			bank: 0,
-			patch: 0,
-			tuneCoarse: 0,
-			tuneFine: 0,
-			volume: 1,
-			pan: 0,
-			reverb: 0,
-		}
-
-		// Apply time=0 updates to this instrument, removing the updates from `masterCommands`.
-		// Note we don't mutate `initialMasterCommands` in this list.
-		for (const command of initialMasterCommands) {
-			if (command.type !== 'UPDATE_INSTRUMENT') continue
-			if (command.channel !== channelNo) continue
-
-			// Mutate `instrument` with the partial.
-			Object.assign(instrument, command.update)
-
-			// Simple linear search from the start of commands. We can't use a binary search
-			// because we know that time=0 and that's the non-unique sort key, plus we know
-			// it'll be somewhere near the start of `masterCommands` since time=0.
-			for (let i = 0; i < masterCommands.length; i++) {
-				if (masterCommands[i].id === command.id) {
-					// Delete it :)
-					masterCommands.splice(i, 1)
-					continue
-				}
-			}
-		}
-
-		instruments[channelNo] = instrument
-	}
-
-	return {
-		instruments,
-		sections: [
-			{
-				commands: masterCommands,
-				tracks,
-			},
-		],
-	}
-	*/
-
 	const song = new Song()
 	const subsegment = song.addSegment().addSubsegment()
 
 	for (const midiTrack of midi.tracks) {
 		const track = subsegment.addTrack()
 
-		// We make an assumption about the MIDI file here: that it makes sense to assign each track exactly one
-		// instrument. This obviously won't be logical for some files (e.g. files optimised to fit more than 16
+		// We make an assumption about the MIDI file here: that it makes sense to assign each track unique
+		// instruments. This obviously won't be logical for some files (e.g. files optimised to fit more than 16
 		// instruments into 16 channels), but it'll likely be good enough for most people. Additionally, it
 		// makes track-specific control events easier to reason about and translate.
-		const instrument = song.addInstrument()
-		track.insertCommand(new LoadInstrumentCmd(0, instrument))
+
+		const section = track.addSection()
+		section.instrument = song.addInstrument()
 
 		// TODO: handle channel 9 (drum)
 
@@ -456,7 +401,7 @@ export function convert(midi: Midi): Song {
 			if (event.type === 'NOTE_OFF' || (event.type === 'NOTE_ON' && event.velocity === 0)) {
 				for (const active of activeNotes) {
 					if (active.note === event.note && active.channel === event.channel) {
-						track.insertCommand(new NoteCmd(active.startTime, event.note, active.velocity, time - active.startTime))
+						section.insertCommand(new NoteCmd(active.startTime, event.note, active.velocity, time - active.startTime))
 						activeNotes.delete(active)
 						break
 					}
@@ -470,37 +415,37 @@ export function convert(midi: Midi): Song {
 					velocity: event.velocity,
 				})
 			} else if (event.type === 'META' && event.metaType === MetaEventType.EndOfTrack) {
-				track.duration = time
+				section.duration = time
 			} else if (event.type === 'SET_TEMPO') {
 				// See https://www.midi.org/forum/4452-calculate-absolute-time-from-ppq-and-ticks.
 				// Note that we already handle ticksPerQuarterNote in `time`.
 				const bpm = Math.round(1000000 * 60 / event.microsecondsPerQuarterNote)
-				track.insertCommand(new SetTempoCmd(time, bpm))
+				section.insertCommand(new SetTempoCmd(time, bpm))
 			} else if (event.type === 'CONTROL_CHANGE') {
-				if (time === 0) {
+				if (time === section.time) {
 					// Instrument setup.
 					// See https://www.midi.org/specifications-old/item/table-3-control-change-messages-data-bytes-2
-					if (event.controller === 0x00) instrument.bank = event.value << 8
-					if (event.controller === 0x20) instrument.bank = (instrument.bank & 0xFF) + event.value
-					if (event.controller === 0x07) instrument.volume = event.value
-					if (event.controller === 0x0A) instrument.pan = event.value // TODO: range
-					if (event.controller === 0x5B) instrument.reverb = event.value
+					if (event.controller === 0x00) section.instrument.bank = event.value << 8
+					if (event.controller === 0x20) section.instrument.bank = (section.instrument.bank & 0xFF) + event.value
+					if (event.controller === 0x07) section.instrument.volume = event.value
+					if (event.controller === 0x0A) section.instrument.pan = event.value // TODO: range
+					if (event.controller === 0x5B) section.instrument.reverb = event.value
 				} else {
-					// TODO: handle t != 0
+					// TODO: handle t != 0: requires adding a new section
 				}
 			} else if (event.type === 'PROGRAM_CHANGE') {
-				if (time === 0) {
+				if (time === section.time) {
 					// Instrument setup.
-					instrument.patch = event.program
+					section.instrument.patch = event.program
 				} else {
-					// TODO: handle t != 0
+					// TODO: handle t != 0: requires adding a new section
 				}
 			}
 		}
 
 		// There shouldn't be any notes that don't end, but we'll handle them anyway.
 		for (const { startTime, note, velocity } of activeNotes) {
-			track.insertCommand(new NoteCmd(startTime, note, velocity, time - startTime))
+			section.insertCommand(new NoteCmd(startTime, note, velocity, time - startTime))
 		}
 	}
 

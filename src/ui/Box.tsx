@@ -34,14 +34,6 @@ const Box = forwardRef((props: {
 		}
 	}
 
-	console.log({
-		padding: em(props.pad),
-		'padding-left': em(props.padX),
-		'padding-right': em(props.padX),
-		'padding-top': em(props.padY),
-		'padding-bottom': em(props.padY),
-	})
-
 	return <div ref={ref} class={cx({
 		Box: true,
 		Box_vertical: props.dir === 'v',
