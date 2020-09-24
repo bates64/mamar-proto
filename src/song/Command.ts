@@ -23,13 +23,4 @@ export class NoteCmd extends Command {
 	}
 }
 
-export class SetTempoCmd extends Command {
-	bpm: number
-
-	constructor(time: number, bpm: number) {
-		super(time)
-		this.bpm = bpm
-	}
-}
-
 // TODO

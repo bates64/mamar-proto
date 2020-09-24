@@ -1,4 +1,3 @@
-import { FunctionComponent } from 'preact'
 import { useState, useCallback } from 'preact/hooks'
 
 import { fileOpen } from 'browser-nativefs'
@@ -7,7 +6,7 @@ import Button from './ui/Button'
 import { Page, Play } from './ui/icon'
 
 import Song from './song/Song'
-import { NoteCmd, SetTempoCmd } from './song/Command'
+import { NoteCmd } from './song/Command'
 import midiToSong from './song/midi'
 
 import type Player from './playback/Player'
@@ -40,10 +39,12 @@ export default () => {
 	const playSong = useCallback(() => {
 		console.log(song)
 
-		const subsegment = song.segments[0]?.subsegments[0]
-		if (!subsegment) return
+		const segment = song.segments[0]
+		if (!segment) return
+		player.bpm = segment.tempoAt(0)
 
-		let bpmChanges = 0
+		const subsegment = segment.subsegments[0]
+		if (!subsegment) return
 
 		for (let channel = 0; channel < subsegment.tracks.length; channel++) {
 			for (const section of subsegment.tracks[channel].sections) {
@@ -52,12 +53,6 @@ export default () => {
 				for (const command of section.commands) {
 					if (command instanceof NoteCmd) {
 						player.playNote(command.time, channel, command.pitch, command.velocity, command.duration)
-					} else if (command instanceof SetTempoCmd) {
-						player.bpm = command.bpm
-						if (bpmChanges++ > 0) {
-							// TODO: support dynamic tempo changes
-							console.warn('song uses dynamic tempo, which is not supported')
-						}
 					}
 				}
 			}

@@ -2,7 +2,7 @@ import Command, { NoteCmd } from './Command'
 
 export default class Song {
 	name?: string
-	segments: [Segment?, Segment?, Segment?, Segment?] = []
+	segments: [Segment?, Segment?, Segment?, Segment?] = [] // TODO: rename to 'variants'
 	instruments: Instrument[] = []
 	drums: Drum[] = []
 
@@ -64,6 +64,7 @@ export class Segment {
 
 	name?: string
 	subsegments: Subsegment[] = []
+	tempoChanges: Interpolation[] = [] // Sorted
 
 	constructor(parent: Song) {
 		this.song = parent
@@ -73,6 +74,39 @@ export class Segment {
 		const subseg = new Subsegment(this)
 		this.subsegments.push(subseg)
 		return subseg
+	}
+
+	addTempoChange(change: Interpolation) {
+		// Keep tempoChanges sorted.
+		for (let i = 0; i < this.tempoChanges.length; i++) {
+			const { time } = this.tempoChanges[i]
+
+			if (change.time === time) {
+				this.tempoChanges[i] = change
+				return
+			} else if (change.time < time) {
+				this.tempoChanges.splice(i, 0, change)
+				return
+			}
+		}
+
+		this.tempoChanges.push(change)
+	}
+
+	tempoAt(time: number): number {
+		let latestTempo = 120
+
+		for (let i = 0; i < this.tempoChanges.length; i++) {
+			const change = this.tempoChanges[i]
+
+			if (change.time < time) {
+				return change.calculate(time, this.tempoChanges[i + 1] ?? null)
+			}
+
+			latestTempo = change.calculate(time)
+		}
+
+		return latestTempo
 	}
 }
 
@@ -194,4 +228,25 @@ export enum MuteState {
 
 	/** If any tracks are Solo, only Solo tracks are heard. */
 	Solo,
+}
+
+interface Interpolation {
+	time: number
+	value: number
+
+	calculate(time: number, next?: Interpolation);
+}
+
+export class InstantInterp implements Interpolation {
+	time: number
+	value: number
+
+	constructor(time: number, value: number) {
+		this.time = time
+		this.value = value
+	}
+
+	calculate(time: number, next?: Interpolation) {
+		return this.value
+	}
 }

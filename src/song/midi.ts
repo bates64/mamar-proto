@@ -1,5 +1,5 @@
-import Song from './Song'
-import { NoteCmd, SetTempoCmd } from './Command'
+import Song, { InstantInterp } from './Song'
+import { NoteCmd } from './Command'
 import Reader from './Reader'
 
 export default function loadToSong(data: Uint8Array): Song {
@@ -370,7 +370,8 @@ export function convert(midi: Midi): Song {
 	const usedChannels = new Set<number>()
 
 	const song = new Song()
-	const subsegment = song.addSegment().addSubsegment()
+	const segment = song.addSegment()
+	const subsegment = segment.addSubsegment()
 
 	for (const midiTrack of midi.tracks) {
 		const track = subsegment.addTrack()
@@ -420,7 +421,7 @@ export function convert(midi: Midi): Song {
 				// See https://www.midi.org/forum/4452-calculate-absolute-time-from-ppq-and-ticks.
 				// Note that we already handle ticksPerQuarterNote in `time`.
 				const bpm = Math.round(1000000 * 60 / event.microsecondsPerQuarterNote)
-				section.insertCommand(new SetTempoCmd(time, bpm))
+				segment.addTempoChange(new InstantInterp(time, bpm))
 			} else if (event.type === 'CONTROL_CHANGE') {
 				if (time === section.time) {
 					// Instrument setup.
